@@ -2,7 +2,7 @@
 
 # Helpers
 function isInstalled() {
-    command -v "$1" > /dev/null 2>&1 || { printf '%s' "$1 is not installed"; exit 1; }
+    command -v "$1" > /dev/null 2>&1 || { printf '%s' "$1 is not installed" >&2; exit 1; }
 }
 
 function retrieveAccessKeyID() {
@@ -20,12 +20,10 @@ function retrieveCredentials() {
 }
 
 function formatOutputForAWSCLI() {
-    jq -n \
-        --arg Version "1" \
+    jq --null-input --raw-output \
+        --argjson Version 1 \
         --arg AccessKeyId "$1" \
         --arg SecretAccessKey "$2" \
-        --arg SessionToken "" \
-        --arg Expiration "" \
         '$ARGS.named'
 }
 
@@ -37,6 +35,7 @@ function main() {
     isInstalled pass
 
     # Handle credential
+    [[ $# -ne 2 ]] && { printf '%s' "Account and Profile expected." >&2; exit 1; }
     retrieveCredentials $1 $2
 }
 
